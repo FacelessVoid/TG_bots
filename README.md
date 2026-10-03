@@ -38,7 +38,7 @@ Telegram-бот для приёма и обработки заявок от кл
 
 ```text
 TG_bots/
-├── Example_bot/
+├── telegram_bot/
 │   ├── handlers/
 │   │   ├── __init__.py
 │   │   ├── admin.py
@@ -83,7 +83,7 @@ pip install aiogram python-dotenv
 
 ## Настройка
 
-В папке `Example_bot` создайте файл `.env`:
+В папке `telegram_bot` создайте файл `.env`:
 
 ```env
 BOT_TOKEN=ваш_токен_бота
@@ -99,7 +99,7 @@ ADMIN_ID=ваш_telegram_id
 Перейдите в папку проекта:
 
 ```bash
-cd Example_bot
+cd telegram_bot
 ```
 
 Запустите бота:
