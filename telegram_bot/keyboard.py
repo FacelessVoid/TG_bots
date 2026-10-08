@@ -1,5 +1,14 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
+
+# =========================================================
+# ADMIN KEYBOARD
+# =========================================================
 
 admin_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -8,9 +17,20 @@ admin_keyboard = InlineKeyboardMarkup(
                 text="📨 Заявки",
                 callback_data="applications"
             )
+        ],
+        [
+            InlineKeyboardButton(
+                text="📅 Расписание",
+                callback_data="schedule"
+            )
         ]
     ]
 )
+
+
+# =========================================================
+# PROFILE KEYBOARD
+# =========================================================
 
 profile_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -28,11 +48,17 @@ profile_keyboard = InlineKeyboardMarkup(
         ]
     ]
 )
+
+
+# =========================================================
+# USER MAIN KEYBOARD
+# =========================================================
+
 inline_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="Показать профиль",
+                text="👤 Профиль",
                 callback_data="profile"
             )
         ],
@@ -41,6 +67,30 @@ inline_keyboard = InlineKeyboardMarkup(
                 text="📝 Оставить заявку",
                 callback_data="application"
             )
+        ],
+        [
+            InlineKeyboardButton(
+                text="📅 Расписание",
+                callback_data="user_schedule"
+            )
         ]
     ]
+)
+
+
+# =========================================================
+# PHONE KEYBOARD
+# =========================================================
+
+phone_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(
+                text="📱 Отправить контакт",
+                request_contact=True
+            )
+        ]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
 )
