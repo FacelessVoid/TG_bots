@@ -581,3 +581,48 @@ def delete_schedule_slot(slot_id):
     )
 
     connection.commit()
+
+# =========================
+# STATISTICS
+# =========================
+
+def get_application_stats():
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS active,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled
+        FROM applications
+        """
+    )
+
+    result = cursor.fetchone()
+
+    total = result[0] or 0
+    active = result[1] or 0
+    completed = result[2] or 0
+    cancelled = result[3] or 0
+
+    return total, active, completed, cancelled
+
+
+def get_schedule_stats():
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'available' THEN 1 ELSE 0 END) AS available,
+            SUM(CASE WHEN status = 'booked' THEN 1 ELSE 0 END) AS booked
+        FROM schedule
+        """
+    )
+
+    result = cursor.fetchone()
+
+    total = result[0] or 0
+    available = result[1] or 0
+    booked = result[2] or 0
+
+    return total, available, booked

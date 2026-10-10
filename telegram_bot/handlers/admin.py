@@ -13,6 +13,8 @@ from aiogram.types import (
 from config import ADMIN_ID
 from database import (
     add_schedule_slot,
+    get_application_stats,
+    get_schedule_stats,
     complete_application,
     delete_application,
     delete_schedule_slot,
@@ -146,10 +148,11 @@ async def applications(callback: CallbackQuery):
 
         buttons.append([
             InlineKeyboardButton(
-                text=f"{status_text} Заявка №{application_id} — {name}",
+                text=f"{status_text} №{application_id} — {name}",
                 callback_data=f"application_{application_id}"
             )
-        ])
+            ]
+        )
 
     buttons.append([
         InlineKeyboardButton(
@@ -159,7 +162,8 @@ async def applications(callback: CallbackQuery):
     ])
 
     await callback.message.edit_text(
-        "📨 Заявки",
+        "📨 Заявки\n\n"
+        "Выбери заявку:",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=buttons
         )
@@ -228,7 +232,7 @@ async def application_details(callback: CallbackQuery):
         ],
         [
             InlineKeyboardButton(
-                text="⬅️ Назад",
+                text="⬅️ К заявкам",
                 callback_data="applications"
             )
         ]
@@ -236,12 +240,24 @@ async def application_details(callback: CallbackQuery):
 
     text = (
         f"📨 Заявка №{application_id}\n\n"
-        f"👤 Имя: {name}\n"
-        f"📝 Задача: {task}\n"
-        f"📅 Дата: {application_date or 'не выбрана'}\n"
-        f"🕐 Время: {application_time or 'не выбрано'}\n"
-        f"📞 Телефон: {phone}\n\n"
-        f"📌 Статус: {status_text}"
+
+        f"👤 Клиент\n"
+        f"{name}\n\n"
+
+        f"📝 Задача\n"
+        f"{task}\n\n"
+
+        f"📅 Дата\n"
+        f"{application_date or 'не выбрана'}\n\n"
+
+        f"🕐 Время\n"
+        f"{application_time or 'не выбрано'}\n\n"
+
+        f"📞 Телефон\n"
+        f"{phone}\n\n"
+
+        f"📌 Статус\n"
+        f"{status_text}"
     )
 
     await callback.message.edit_text(
@@ -411,6 +427,38 @@ async def confirm_delete_application(
 
     await applications(callback)
 
+@router.callback_query(F.data == "statistics")
+async def statistics(callback: CallbackQuery):
+    if not await check_admin(callback):
+        return
+
+    total_apps, active_apps, completed_apps, cancelled_apps = get_application_stats()
+    total_slots, available_slots, booked_slots = get_schedule_stats()
+
+    text = (
+        "📊 Статистика\n\n"
+        "📨 Заявки\n"
+        f"Всего: {total_apps}\n"
+        f"🟡 В работе: {active_apps}\n"
+        f"🟢 Выполнено: {completed_apps}\n"
+        f"🔴 Отменено: {cancelled_apps}\n\n"
+        "📅 Расписание\n"
+        f"Всего слотов: {total_slots}\n"
+        f"🟢 Свободно: {available_slots}\n"
+        f"🔴 Занято: {booked_slots}"
+    )
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_back"
+                )]
+            ]
+        )
+    )
 
 # =========================================================
 # РАСПИСАНИЕ
@@ -446,10 +494,9 @@ async def schedule(callback: CallbackQuery):
 
     await callback.message.edit_text(
         "📅 Расписание\n\n"
-        "Что хочешь сделать?",
+        "Управление рабочим временем:",
         reply_markup=keyboard
     )
-
     await callback.answer()
 
 
@@ -827,7 +874,7 @@ async def schedule_view(
 
     await callback.message.edit_text(
         "📋 Расписание\n\n"
-        "Выбери дату:",
+        "Выбери дату, чтобы посмотреть доступное время:",
         reply_markup=create_schedule_view_calendar(
             today.year,
             today.month
@@ -1098,7 +1145,8 @@ async def schedule_view_date(
 
         await callback.message.edit_text(
             f"📅 {date_text}\n\n"
-            "На эту дату пока нет времени.",
+            "На эту дату пока нет свободного времени.\n\n"
+            "Можешь добавить его вручную:",
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=buttons
             )
@@ -1145,6 +1193,7 @@ async def schedule_view_date(
 
     await callback.message.edit_text(
         f"📅 {date_text}\n\n"
+        "Выбери время:\n\n"
         "🟢 — свободно\n"
         "🔴 — занято",
         reply_markup=InlineKeyboardMarkup(
@@ -1213,7 +1262,7 @@ async def schedule_view_back(
 
     await callback.message.edit_text(
         "📋 Расписание\n\n"
-        "Выбери дату:",
+        "Выбери дату, чтобы посмотреть доступное время:",
         reply_markup=create_schedule_view_calendar(
             year,
             month
@@ -1301,14 +1350,24 @@ async def schedule_slot_details(
     ])
 
     text = (
-        "📅 Информация о времени\n\n"
-        f"Дата: {slot_date}\n"
-        f"Время: {slot_time}\n"
-        f"Статус: {status_text}"
+        "🕐 Информация о времени\n\n"
+
+        "📅 Дата\n"
+        f"{slot_date}\n\n"
+
+        "⏰ Время\n"
+        f"{slot_time}\n\n"
+
+        "📌 Статус\n"
+        f"{status_text}"
     )
 
     if telegram_id:
-        text += f"\n👤 Telegram ID: {telegram_id}"
+        text += (
+            "\n\n"
+            "👤 Клиент\n"
+            f"Telegram ID: {telegram_id}"
+        )
 
     await callback.message.edit_text(
         text,

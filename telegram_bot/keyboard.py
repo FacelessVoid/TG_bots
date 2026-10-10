@@ -12,18 +12,9 @@ from aiogram.types import (
 
 admin_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="📨 Заявки",
-                callback_data="applications"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text="📅 Расписание",
-                callback_data="schedule"
-            )
-        ]
+        [InlineKeyboardButton(text="📨 Заявки", callback_data="applications")],
+        [InlineKeyboardButton(text="📅 Расписание", callback_data="schedule")],
+        [InlineKeyboardButton(text="📊 Статистика", callback_data="statistics")]
     ]
 )
 
